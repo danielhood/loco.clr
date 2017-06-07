@@ -1,39 +1,33 @@
 package main
 
 import (
-  "crypto/tls"
   "log"
+  "crypto/tls"
 
   "gopkg.in/resty.v0"
-
-)
-
-const (
-  server = "https://loco.local:8080"
-  Version = "0.1"
+  "github.com/danielhood/loco.clr/config"
+  "github.com/danielhood/loco.clr/clientApis"
 )
 
 func main() {
-  log.Print("loco.clr v", Version, "starting...")
-
-  log.Print("getting token from server: ", server)
+  log.Printf("loco.clr v%v starting", config.Version)
 
   resty.SetTLSClientConfig(&tls.Config{ InsecureSkipVerify: true })
-  tokenResp, err := resty.R().Get(server + "/token")
 
-  if err != nil {
-    log.Print("Error: ", err)
+  log.Print("Getting token from server: ", config.LocoServer)
+
+  token, err := clientApis.GetToken()
+  if (err != nil) {
+    log.Printf("Unable to get token: ", err)
     return
   }
 
-  token := tokenResp.String()
-  log.Print("got token: ", token)
+  log.Print("Got token: ", token)
 
-  log.Print("getting object list")
-  resty.SetAuthToken(token)
-  objectsResp, err := resty.R().Get(server + "/object")
+  log.Print("Getting object list")
+  objects, err := clientApis.GetObjects(token)
 
-  log.Print("Objects: ", objectsResp.String())
+  log.Print("Got Objects: ", objects)
 
   log.Print("Done")
 }
